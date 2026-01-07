@@ -1,17 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_demo/auth/regsiter_screen.dart';
 import 'package:supabase_demo/home_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
 
   final email = TextEditingController();
   final password = TextEditingController();
@@ -19,12 +18,12 @@ class _LoginScreenState extends State<LoginScreen> {
   bool loading = false;
   final supabase = Supabase.instance.client;
 
-  Future<void> login() async {
+  Future<void> register() async {
     setState(() {
       loading = true;
     });
     try {
-      final result = await supabase.auth.signInWithPassword(
+      final result = await supabase.auth.signUp(
           email: email.text,
           password: password.text);
       if (result.user != null && result.session != null) {
@@ -95,22 +94,22 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () {
-                        login();
+                        register();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.deepPurple,
                         foregroundColor: Colors.white
                       ),
                       child: const Text(
-                        'Login',
+                        'Register',
                         style: TextStyle(fontSize: 16),
                       ),
                     ),
                   ),
 
                   TextButton(onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
-                  }, child: Text("Don't have an account? Register",
+
+                  }, child: Text("Already have an account? Login",
                   style: TextStyle(color: Colors.deepPurple),))
                 ],
               ),
