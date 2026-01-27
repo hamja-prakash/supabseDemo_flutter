@@ -1,16 +1,9 @@
-import 'dart:io';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_demo/auth/login/bloc/login_cubit.dart';
 import 'package:supabase_demo/auth/login/bloc/login_state.dart';
 import 'package:supabase_demo/auth/register/view/register_screen.dart';
-import 'package:supabase_demo/home_screen.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
+import 'package:supabase_demo/home_screen.dart';  
 import '../../../helper/assets_path.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -24,37 +17,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final email = TextEditingController();
   final password = TextEditingController();
   bool _isPasswordVisible = false;
-  final supabase = Supabase.instance.client;
-
-  Future<void> continueWithGoogle() async {
-    try{
-      GoogleSignIn googleSignIn = GoogleSignIn.instance;
-    await googleSignIn.initialize(
-      serverClientId:dotenv.env['WEB_CLIENT'],
-      clientId:Platform.isAndroid ? dotenv.env['ANDROID_CLIENT'] : dotenv.env['IOS_CLIENT'],
-    );
-    GoogleSignInAccount googleSignInAccount = await googleSignIn.authenticate();
-    String idToken = googleSignInAccount.authentication.idToken ?? '';
-    final authorization = await googleSignInAccount.authorizationClient.
-                         authorizationForScopes(['email', 'profile']) ??
-                         await googleSignInAccount.authorizationClient.
-                         authorizeScopes(['email', 'profile']);
-
-    final result = await supabase.auth.signInWithIdToken(
-        provider: OAuthProvider.google,
-        idToken: idToken,
-        accessToken:authorization.accessToken,
-    );
-      if (result.user != null && result.session != null) {
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => HomeScreen()),
-                (context) => false);
-      }
-    } catch(e) {
-      print(e);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,17 +26,23 @@ class _LoginScreenState extends State<LoginScreen> {
         body: SafeArea(
           child: BlocListener<LoginCubit, LoginState>(
             listener: (context, state) {
-              if (state is LoginSuccess) {
+              if (state is LoginSuccess || state is GoogleLoginSuccess) {
                 Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => HomeScreen()),
-                    (context) => false);
-              } else if (state is LoginFailure) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message)),
+                  context,
+                  MaterialPageRoute(builder: (context) => HomeScreen()),
+                  (context) => false,
                 );
               }
+
+              if (state is LoginFailure) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
+              }
+
+              if (state is GoogleLoginFailure) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
+              }
             },
+
             child: BlocBuilder<LoginCubit, LoginState>(
               builder: (context, state) {
                 return Stack(
@@ -88,17 +56,11 @@ class _LoginScreenState extends State<LoginScreen> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             spacing: 10,
                             children: [
-                              Icon(
-                                Icons.lock_person_rounded,
-                                size: 100,
-                                color: Colors.deepPurple,
-                              ),
+                              Icon(Icons.lock_person_rounded, size: 100, color: Colors.deepPurple),
                               SizedBox(height: 10),
                               TextFormField(
                                 controller: email,
-                                decoration: InputDecoration(
-                                  hintText: 'Email',
-                                ),
+                                decoration: InputDecoration(hintText: 'Email'),
                               ),
                               TextFormField(
                                 controller: password,
@@ -112,11 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         _isPasswordVisible = !_isPasswordVisible;
                                       });
                                     },
-                                    icon: Icon(
-                                      _isPasswordVisible
-                                          ? Icons.visibility
-                                          : Icons.visibility_off,
-                                    ),
+                                    icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
                                   ),
                                 ),
                               ),
@@ -129,18 +87,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ? null
                                       : () {
                                           FocusScope.of(context).unfocus();
-                                          context.read<LoginCubit>().login(
-                                                email.text,
-                                                password.text,
-                                              );
+                                          context.read<LoginCubit>().login(email.text, password.text);
                                         },
                                   style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.deepPurple,
-                                      foregroundColor: Colors.white),
-                                  child: const Text(
-                                    'Login',
-                                    style: TextStyle(fontSize: 16),
+                                    backgroundColor: Colors.deepPurple,
+                                    foregroundColor: Colors.white,
                                   ),
+                                  child: const Text('Login', style: TextStyle(fontSize: 16)),
                                 ),
                               ),
 
@@ -148,14 +101,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
                               GestureDetector(
                                 onTap: () {
-                                  continueWithGoogle();
+                                  context.read<LoginCubit>().loginWithGoogle();
                                 },
                                 child: Row(
                                   spacing: 5,
-                                  mainAxisAlignment:MainAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Image.asset(AssetPath.googleLogo, height: 30),
-                                    Text('Continue with Google')
+                                    Text('Continue with Google'),
                                   ],
                                 ),
                               ),
@@ -164,27 +117,22 @@ class _LoginScreenState extends State<LoginScreen> {
 
                               TextButton(
                                 onPressed: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => RegisterScreen()));
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
                                 },
                                 child: Text(
                                   "Don't have an account? Register",
                                   style: TextStyle(color: Colors.deepPurple),
                                 ),
-                              )
+                              ),
                             ],
                           ),
                         ),
                       ),
                     ),
-                    if (state is LoginLoading)
+                    if (state is LoginLoading || state is GoogleLoginLoading)
                       Container(
                         color: Colors.black54,
-                        child: Center(
-                          child: CircularProgressIndicator(),
-                        ),
+                        child: Center(child: CircularProgressIndicator()),
                       ),
                   ],
                 );

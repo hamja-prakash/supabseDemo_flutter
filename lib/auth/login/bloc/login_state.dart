@@ -21,3 +21,16 @@ class LoginFailure extends LoginState {
   @override
   List<Object> get props => [message];
 }
+
+class GoogleLoginLoading extends LoginState {}
+
+class GoogleLoginSuccess extends LoginState {}
+
+class GoogleLoginFailure extends LoginState {
+  final String message;
+  const GoogleLoginFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
