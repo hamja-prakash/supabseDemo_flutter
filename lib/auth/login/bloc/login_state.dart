@@ -34,3 +34,23 @@ class GoogleLoginFailure extends LoginState {
   List<Object> get props => [message];
 }
 
+class AppleLoginLoading extends LoginState {}
+
+class AppleLoginSuccess extends LoginState {}
+
+class AppleLoginFailure extends LoginState {
+  final String message;
+  const AppleLoginFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
+class MagicLinkLoading extends LoginState {}
+class MagicLinkSuccess extends LoginState {}
+class MagicLinkFailure extends LoginState {
+  final String message;
+  const MagicLinkFailure(this.message);
+}
+
+

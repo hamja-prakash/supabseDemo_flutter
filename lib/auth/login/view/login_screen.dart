@@ -3,7 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_demo/auth/login/bloc/login_cubit.dart';
 import 'package:supabase_demo/auth/login/bloc/login_state.dart';
 import 'package:supabase_demo/auth/register/view/register_screen.dart';
-import 'package:supabase_demo/home_screen.dart';  
+import 'package:supabase_demo/helper/appconstant.dart';
+import 'package:supabase_demo/home_screen.dart';
 import '../../../helper/assets_path.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -26,11 +27,23 @@ class _LoginScreenState extends State<LoginScreen> {
         body: SafeArea(
           child: BlocListener<LoginCubit, LoginState>(
             listener: (context, state) {
-              if (state is LoginSuccess || state is GoogleLoginSuccess) {
+              if (state is LoginSuccess || state is GoogleLoginSuccess || state is AppleLoginSuccess) {
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (context) => HomeScreen()),
                   (context) => false,
+                );
+              }
+
+              if (state is MagicLinkSuccess) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Check your email for login link")),
+                );
+              }
+
+              if (state is MagicLinkFailure) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.message)),
                 );
               }
 
@@ -39,6 +52,10 @@ class _LoginScreenState extends State<LoginScreen> {
               }
 
               if (state is GoogleLoginFailure) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
+              }
+
+              if (state is AppleLoginFailure) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
               }
             },
@@ -60,14 +77,14 @@ class _LoginScreenState extends State<LoginScreen> {
                               SizedBox(height: 10),
                               TextFormField(
                                 controller: email,
-                                decoration: InputDecoration(hintText: 'Email'),
+                                decoration: InputDecoration(hintText: AppConstants.email),
                               ),
                               TextFormField(
                                 controller: password,
                                 textAlignVertical: TextAlignVertical.center,
                                 obscureText: !_isPasswordVisible,
                                 decoration: InputDecoration(
-                                  hintText: 'Password',
+                                  hintText: AppConstants.password,
                                   suffixIcon: IconButton(
                                     onPressed: () {
                                       setState(() {
@@ -93,24 +110,92 @@ class _LoginScreenState extends State<LoginScreen> {
                                     backgroundColor: Colors.deepPurple,
                                     foregroundColor: Colors.white,
                                   ),
-                                  child: const Text('Login', style: TextStyle(fontSize: 16)),
+                                  child: const Text(AppConstants.login, style: TextStyle(fontSize: 16)),
                                 ),
                               ),
 
                               SizedBox(height: 5),
 
-                              GestureDetector(
-                                onTap: () {
-                                  context.read<LoginCubit>().loginWithGoogle();
-                                },
-                                child: Row(
-                                  spacing: 5,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Image.asset(AssetPath.googleLogo, height: 30),
-                                    Text('Continue with Google'),
-                                  ],
+                              SizedBox(
+                                width: double.infinity,
+                                height: 50,
+                                child: OutlinedButton.icon(
+                                  onPressed: () {
+                                    FocusScope.of(context).unfocus();
+                                    if (email.text.isNotEmpty) {
+                                      context.read<LoginCubit>().signInWithMagicLink(email.text);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text("Magic link sent to your email")),
+                                      );
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text("Enter email first")),
+                                      );
+                                    }
+                                  },
+                                  icon: Icon(Icons.email),
+                                  label: Text("Continue with Magic Link"),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  ),
                                 ),
+                              ),
+
+                              Row(
+                                children: [
+                                  // Google Button
+                                  Expanded(
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        context.read<LoginCubit>().loginWithGoogle();
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: Colors.grey.shade300),
+                                          borderRadius: BorderRadius.circular(10),
+                                          color: Colors.white,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Image.asset(AssetPath.googleLogo, height: 24),
+                                            const SizedBox(width: 8),
+                                            const Text(AppConstants.google),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  const SizedBox(width: 12),
+
+                                  // Apple Button
+                                  Expanded(
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        context.read<LoginCubit>().signInWithApple();
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: Colors.grey.shade300),
+                                          borderRadius: BorderRadius.circular(10),
+                                          color: Colors.black,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.apple, color: Colors.white),
+                                            const SizedBox(width: 8),
+                                            const Text(AppConstants.apple, style: TextStyle(color: Colors.white)),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
 
                               SizedBox(height: 5),
@@ -120,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
                                 },
                                 child: Text(
-                                  "Don't have an account? Register",
+                                  AppConstants.dontHaveAccount,
                                   style: TextStyle(color: Colors.deepPurple),
                                 ),
                               ),
@@ -129,7 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    if (state is LoginLoading || state is GoogleLoginLoading)
+                    if (state is LoginLoading || state is GoogleLoginLoading || state is AppleLoginLoading || state is MagicLinkLoading)
                       Container(
                         color: Colors.black54,
                         child: Center(child: CircularProgressIndicator()),

@@ -1,8 +1,12 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
+import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login_state.dart';
 
@@ -44,7 +48,7 @@ class LoginCubit extends Cubit<LoginState> {
       );
 
       final googleUser = await googleSignIn.authenticate();
-      final googleAuth = googleUser.authentication;
+      final googleAuth = await googleUser.authentication;
 
       final authClient = googleUser.authorizationClient;
       final authorization = await authClient.authorizationForScopes(['email', 'profile']) ??
@@ -52,7 +56,7 @@ class LoginCubit extends Cubit<LoginState> {
 
       final result = await supabase.auth.signInWithIdToken(
         provider: OAuthProvider.google,
-        idToken: googleAuth.idToken!,
+        idToken: googleAuth.idToken ?? '',
         accessToken: authorization.accessToken,
       );
 
@@ -65,4 +69,54 @@ class LoginCubit extends Cubit<LoginState> {
       emit(GoogleLoginFailure(e.toString()));
     }
   }
+
+  Future<void> signInWithApple() async {
+    emit(AppleLoginLoading());
+
+    try {
+      final rawNonce = supabase.auth.generateRawNonce();
+      final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
+
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: hashedNonce,
+      );
+
+      final idToken = credential.identityToken;
+      if (idToken == null) {
+        throw const AuthException('No Apple ID token');
+      }
+
+      final result = await supabase.auth.signInWithIdToken(
+        provider: OAuthProvider.apple,
+        idToken: idToken,
+        nonce: rawNonce,
+      );
+
+      if (result.user != null) {
+        emit(AppleLoginSuccess());
+      } else {
+        emit(const AppleLoginFailure("Apple login failed"));
+      }
+    } catch (e) {
+      emit(AppleLoginFailure(e.toString()));
+    }
+  }
+
+  Future<void> signInWithMagicLink(String email) async {
+    emit(MagicLinkLoading());
+    try {
+      await supabase.auth.signInWithOtp(
+        email: email,
+        emailRedirectTo: 'myapp://login-callback'
+      );
+      emit(MagicLinkSuccess());
+    } catch (e) {
+      emit(MagicLinkFailure(e.toString()));
+    }
+  }
+
 }
