@@ -1,4 +1,4 @@
-package com.example.supabase_demo
+package com.psspl.example.supabaseDemo
 
 import io.flutter.embedding.android.FlutterActivity
 

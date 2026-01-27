@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 
+    TODO: Replace with your actual Web Client ID from Google Cloud Console.
+    It should look like: 1234567890-abcdefg...apps.googleusercontent.com 
+    -->
+    <string name="default_web_client_id">YOUR_WEB_CLIENT_ID</string>
+</resources>
