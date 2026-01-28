@@ -111,8 +111,9 @@ class LoginCubit extends Cubit<LoginState> {
     try {
       await supabase.auth.signInWithOtp(
         email: email,
-        emailRedirectTo: 'myapp://login-callback'
+        emailRedirectTo: 'com.psspl.example.supabaseDemo://login-callback',
       );
+      print("Magic link sent to $email with redirect: com.psspl.example.supabaseDemo://login-callback");
       emit(MagicLinkSuccess());
     } catch (e) {
       emit(MagicLinkFailure(e.toString()));
