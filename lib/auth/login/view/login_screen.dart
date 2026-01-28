@@ -20,6 +20,13 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isPasswordVisible = false;
 
   @override
+  void dispose() {
+    email.dispose();
+    password.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => LoginCubit(),
@@ -27,14 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
         body: SafeArea(
           child: BlocListener<LoginCubit, LoginState>(
             listener: (context, state) {
-              if (state is LoginSuccess || state is GoogleLoginSuccess || state is AppleLoginSuccess) {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomeScreen()),
-                  (context) => false,
-                );
-              }
-
+              // Navigation handled by AuthGate
               if (state is MagicLinkSuccess) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text("Check your email for login link")),
