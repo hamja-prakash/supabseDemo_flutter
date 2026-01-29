@@ -160,6 +160,10 @@ class _PhoneNumberAuthViewState extends State<_PhoneNumberAuthView> {
                               numberOfFields: 6,
                               borderColor: Colors.deepPurple,
                               showFieldAsBox: true,
+                              fieldWidth: 45,
+                              borderRadius: BorderRadius.circular(8),
+                              textStyle: const TextStyle(fontSize: 18, color: Colors.black),
+                              margin: const EdgeInsets.symmetric(horizontal: 4.0),
                               onSubmit: (String verificationCode) {
                                 _verifyOtp(verificationCode);
                               }, // end onSubmit
