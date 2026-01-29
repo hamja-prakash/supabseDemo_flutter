@@ -53,4 +53,16 @@ class MagicLinkFailure extends LoginState {
   const MagicLinkFailure(this.message);
 }
 
+class OTPLoading extends LoginState {}
+class OTPSuccess extends LoginState {}
+class OTPFailure extends LoginState {
+  final String message;
+  const OTPFailure(this.message);
+}
 
+class OTPVerifyLoading extends LoginState {}
+class OTPVerifySuccess extends LoginState {}
+class OTPVerifyFailure extends LoginState {
+  final String message;
+  const OTPVerifyFailure(this.message);
+}

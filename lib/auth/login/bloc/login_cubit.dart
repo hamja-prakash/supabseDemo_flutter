@@ -119,4 +119,35 @@ class LoginCubit extends Cubit<LoginState> {
       emit(MagicLinkFailure(e.toString()));
     }
   }
+
+  Future<void> signInWithPhoneNo(String phoneNumber) async {
+    emit(OTPLoading());
+    try {
+      await supabase.auth.signInWithOtp(
+        phone: phoneNumber,
+        channel: OtpChannel.sms,
+      );
+      emit(OTPSuccess());
+    } catch (e) {
+      emit(OTPFailure(e.toString()));
+    }
+  }
+
+  Future<void> verifyOTP(String phoneNumber, String token) async {
+    emit(OTPVerifyLoading());
+    try {
+      final response = await supabase.auth.verifyOTP(
+        phone: phoneNumber,
+        token: token,
+        type: OtpType.sms,
+      );
+      if (response.session != null) {
+        emit(OTPVerifySuccess());
+      } else {
+        emit(const OTPVerifyFailure("Verification failed"));
+      }
+    } catch (e) {
+      emit(OTPVerifyFailure(e.toString()));
+    }
+  }
 }

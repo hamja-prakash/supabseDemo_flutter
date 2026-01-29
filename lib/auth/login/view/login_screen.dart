@@ -4,8 +4,8 @@ import 'package:supabase_demo/auth/login/bloc/login_cubit.dart';
 import 'package:supabase_demo/auth/login/bloc/login_state.dart';
 import 'package:supabase_demo/auth/register/view/register_screen.dart';
 import 'package:supabase_demo/helper/appconstant.dart';
-import 'package:supabase_demo/home_screen.dart';
 import '../../../helper/assets_path.dart';
+import 'phonenumber_auth_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -137,6 +137,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.deepPurple,
                                       foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
                                     ),
                                     child: const Text(AppConstants.login, style: TextStyle(fontSize: 16)),
                                   ),
@@ -247,7 +250,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         onTap: () {
                                           Navigator.push(
                                             context,
-                                            MaterialPageRoute(builder: (context) => HomeScreen()),
+                                            MaterialPageRoute(builder: (context) => PhonenumberAuthScreen()),
                                           );
                                         },
                                         child: Container(
