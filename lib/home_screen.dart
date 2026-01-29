@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_demo/auth/login/view/login_screen.dart';
+import 'package:supabase_demo/helper/appconstant.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -56,10 +57,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.deepPurple,
-                      foregroundColor: Colors.white
+                      foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
+
                   child: const Text(
-                    'Logout',
+                    AppConstants.logout,
                     style: TextStyle(fontSize: 16),
                   ),
                 ),

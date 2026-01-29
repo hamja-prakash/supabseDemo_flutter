@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 import 'package:supabase_demo/auth/login/bloc/login_cubit.dart';
 import 'package:supabase_demo/auth/login/bloc/login_state.dart';
+import 'package:supabase_demo/helper/appconstant.dart';
 
 import '../../../home_screen.dart';
 
@@ -71,15 +72,11 @@ class _PhoneNumberAuthViewState extends State<_PhoneNumberAuthView> {
                 _isOtpSent = true;
               });
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("OTP Sent successfully!")),
+                const SnackBar(content: Text(AppConstants.otpSuccessSent)),
               );
             }
             else if (state is OTPVerifySuccess) {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => HomeScreen()),
-                    (context) => false,
-              );
+              Navigator.of(context).pop();
             }
           },
           child: BlocBuilder<LoginCubit, LoginState>(
@@ -103,7 +100,7 @@ class _PhoneNumberAuthViewState extends State<_PhoneNumberAuthView> {
 
                         if (!_isOtpSent) ...[
                           const Text(
-                            "Enter your phone number to continue",
+                            AppConstants.enterPhoneNoToContinue,
                             textAlign: TextAlign.center,
                             style: TextStyle(fontSize: 16, color: Colors.grey),
                           ),
@@ -114,14 +111,13 @@ class _PhoneNumberAuthViewState extends State<_PhoneNumberAuthView> {
                             controller: _phoneController,
                             keyboardType: TextInputType.phone,
                             decoration: const InputDecoration(
-                              labelText: "Phone Number",
-                              hintText: "+1234567890",
+                              labelText: AppConstants.phoneNo,
                               border: OutlineInputBorder(),
                               prefixIcon: Icon(Icons.phone),
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return "Please enter your phone number";
+                                return AppConstants.enterPhoneNo;
                               }
                               return null;
                             },
@@ -149,7 +145,7 @@ class _PhoneNumberAuthViewState extends State<_PhoneNumberAuthView> {
                                   color: Colors.white,
                                 ),
                               )
-                                  : const Text("Send OTP"),
+                                  : const Text(AppConstants.sendOTP),
                             ),
                           ),
                         ] else
@@ -179,7 +175,7 @@ class _PhoneNumberAuthViewState extends State<_PhoneNumberAuthView> {
                                     _isOtpSent = false;
                                   });
                                 },
-                                child: const Text("Change Phone Number"),
+                                child: const Text(AppConstants.changePhoneNo),
                               ),
                           ],
                       ],
