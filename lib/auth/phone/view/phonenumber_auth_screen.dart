@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
-import 'package:supabase_demo/auth/login/bloc/login_cubit.dart';
-import 'package:supabase_demo/auth/login/bloc/login_state.dart';
+import 'package:supabase_demo/auth/phone/bloc/phone_auth_cubit.dart';
+import 'package:supabase_demo/auth/phone/bloc/phone_auth_state.dart';
 import 'package:supabase_demo/helper/appconstant.dart';
 
 import '../../../home_screen.dart';
@@ -13,7 +13,7 @@ class PhonenumberAuthScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => LoginCubit(),
+      create: (context) => PhoneAuthCubit(),
       child: const _PhoneNumberAuthView(),
     );
   }
@@ -39,12 +39,12 @@ class _PhoneNumberAuthViewState extends State<_PhoneNumberAuthView> {
 
   void _sendOtp() {
     if (_formKey.currentState!.validate()) {
-      context.read<LoginCubit>().signInWithPhoneNo(_phoneController.text);
+      context.read<PhoneAuthCubit>().signInWithPhoneNo(_phoneController.text);
     }
   }
 
   void _verifyOtp(String otp) {
-    context.read<LoginCubit>().verifyOTP(_phoneController.text, otp);
+    context.read<PhoneAuthCubit>().verifyOTP(_phoneController.text, otp);
   }
 
   @override
@@ -57,17 +57,17 @@ class _PhoneNumberAuthViewState extends State<_PhoneNumberAuthView> {
         ),
         // title: const Text("Phone Authentication"),
       ),
-      body: BlocListener<LoginCubit, LoginState>(
+      body: BlocListener<PhoneAuthCubit, PhoneAuthState>(
           listener: (context, state) {
-            if (state is OTPFailure) {
+            if (state is PhoneAuthFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text("Error: ${state.message}")),
               );
-            } else if (state is OTPVerifyFailure) {
+            } else if (state is PhoneAuthVerifyFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text("Verification Error: ${state.message}")),
               );
-            } else if (state is OTPSuccess) {
+            } else if (state is PhoneAuthCodeSent) {
               setState(() {
                 _isOtpSent = true;
               });
@@ -75,13 +75,13 @@ class _PhoneNumberAuthViewState extends State<_PhoneNumberAuthView> {
                 const SnackBar(content: Text(AppConstants.otpSuccessSent)),
               );
             }
-            else if (state is OTPVerifySuccess) {
+            else if (state is PhoneAuthVerified) {
               Navigator.of(context).pop();
             }
           },
-          child: BlocBuilder<LoginCubit, LoginState>(
+          child: BlocBuilder<PhoneAuthCubit, PhoneAuthState>(
             builder: (context, state) {
-              final isLoading = state is OTPLoading || state is OTPVerifyLoading;
+              final isLoading = state is PhoneAuthLoading || state is PhoneAuthVerifyLoading;
               return Center(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(16.0),
