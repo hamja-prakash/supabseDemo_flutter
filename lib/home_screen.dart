@@ -18,6 +18,37 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final supabase = Supabase.instance.client;
+  final ScrollController _scrollController = ScrollController();
+  late final NoteCubit _noteCubit;
+
+  @override
+  void initState() {
+    super.initState();
+    _noteCubit = NoteCubit()..fetchNotes();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _noteCubit.close();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_isBottom) {
+      if (_noteCubit.state is NotesLoaded && (_noteCubit.state as NotesLoaded).hasMore) {
+        _noteCubit.fetchNotes(isLoadMore: true);
+      }
+    }
+  }
+
+  bool get _isBottom {
+    if (!_scrollController.hasClients) return false;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+    return currentScroll >= (maxScroll * 0.9); // Fetch slightly before bottom
+  }
 
   Future<void> logout() async {
     await supabase.auth.signOut();
@@ -32,8 +63,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => NoteCubit()..fetchNotes(),
+    return BlocProvider.value(
+      value: _noteCubit,
       child: Scaffold(
         appBar: AppBar(
           title: const Text(AppConstants.myNotes),
@@ -72,9 +103,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 return const Center(child: Text(AppConstants.noNotesFound, style: TextStyle(fontWeight: .normal, fontSize: 20),));
               }
               return ListView.builder(
+                controller: _scrollController,
                 padding: const EdgeInsets.all(16),
-                itemCount: state.notes.length,
+                itemCount: state.hasMore ? state.notes.length + 1 : state.notes.length,
                 itemBuilder: (context, index) {
+                  if (index >= state.notes.length) {
+                    return const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
                   final note = state.notes[index];
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
@@ -139,6 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
               );
+
             }
             return const Center(child: Text(AppConstants.somethingWentWrong));
           },

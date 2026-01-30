@@ -16,10 +16,11 @@ class NoteLoading extends NoteState {}
 // ===== Fetch Notes =====
 class NotesLoaded extends NoteState {
   final List<Map<String, dynamic>> notes;
-  const NotesLoaded(this.notes);
+  final bool hasMore;
+  const NotesLoaded(this.notes, {this.hasMore = true});
 
   @override
-  List<Object?> get props => [notes];
+  List<Object?> get props => [notes, hasMore];
 }
 
 // ===== Add =====
