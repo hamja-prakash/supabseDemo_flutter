@@ -36,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
       create: (context) => NoteCubit()..fetchNotes(),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('My Notes'),
+          title: const Text(AppConstants.myNotes),
           centerTitle: true,
           actions: [
             PopupMenuButton(
@@ -44,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
               itemBuilder: (context) => [
                 PopupMenuItem(
                   onTap: logout,
-                  child: const Text("Logout"),
+                  child: const Text(AppConstants.logout),
                 ),
               ],
             )
@@ -60,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
             }
             if (state is NoteDeleteSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Note deleted successfully"), backgroundColor: Colors.green),
+                const SnackBar(content: Text(AppConstants.noteDeleted), backgroundColor: Colors.green),
               );
             }
           },
@@ -69,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return const Center(child: CircularProgressIndicator());
             } else if (state is NotesLoaded) {
               if (state.notes.isEmpty) {
-                return const Center(child: Text("No notes found", style: TextStyle(fontWeight: .normal, fontSize: 20),));
+                return const Center(child: Text(AppConstants.noNotesFound, style: TextStyle(fontWeight: .normal, fontSize: 20),));
               }
               return ListView.builder(
                 padding: const EdgeInsets.all(16),
@@ -81,8 +81,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ListTile(
                       contentPadding: const EdgeInsets.only(
                           right: 4, left: 16, top: 4, bottom: 4),
-                      title: Text(note['title'] ?? ''),
-                      subtitle: Text(note['description'] ?? ''),
+                      title: Text(note[AppConstants.titleKey] ?? ''),
+                      subtitle: Text(note[AppConstants.descriptionKey] ?? ''),
                       leading: Image.asset(
                         AssetPath.bookLogo,
                         color: Colors.deepPurple,
@@ -114,19 +114,19 @@ class _HomeScreenState extends State<HomeScreen> {
                               showDialog(
                                 context: context,
                                 builder: (context) => AlertDialog(
-                                  title: const Text("Delete Note"),
-                                  content: const Text("Are you sure you want to delete this note?"),
+                                  title: const Text(AppConstants.deleteNote),
+                                  content: const Text(AppConstants.deleteConfirmation),
                                   actions: [
                                     TextButton(
                                       onPressed: () => Navigator.pop(context),
-                                      child: const Text("Cancel"),
+                                      child: const Text(AppConstants.cancel),
                                     ),
                                     TextButton(
                                       onPressed: () {
                                         Navigator.pop(context);
-                                        cubit.deleteNote(note['id']);
+                                        cubit.deleteNote(note[AppConstants.idKey]);
                                       },
-                                      child: const Text("Delete", style: TextStyle(color: Colors.red)),
+                                      child: const Text(AppConstants.delete, style: TextStyle(color: Colors.red)),
                                     ),
                                   ],
                                 ),
@@ -140,7 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               );
             }
-            return const Center(child: Text("Something went wrong"));
+            return const Center(child: Text(AppConstants.somethingWentWrong));
           },
         ),
 

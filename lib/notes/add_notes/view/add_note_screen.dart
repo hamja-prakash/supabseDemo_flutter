@@ -2,7 +2,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../../../helper/appconstant.dart';
 import '../../../shared/common_widget/common_textfield.dart';
 import '../cubit/notes_cubit.dart';
@@ -24,8 +23,8 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
   void initState() {
     super.initState();
     if (widget.note != null) {
-      title.text = widget.note!['title'] ?? '';
-      description.text = widget.note!['description'] ?? '';
+      title.text = widget.note![AppConstants.titleKey] ?? '';
+      description.text = widget.note![AppConstants.descriptionKey] ?? '';
     }
   }
 
@@ -39,19 +38,19 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text(widget.note == null ? 'Add Note' : 'Edit Note')),
+        appBar: AppBar(title: Text(widget.note == null ? AppConstants.addNote : AppConstants.editNote)),
         body: SafeArea(
           child: BlocListener<NoteCubit, NoteState>(
             listener: (context, state) {
               if (state is NoteAddSuccess) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Note added successfully"), backgroundColor: Colors.green),
+                  const SnackBar(content: Text(AppConstants.noteAdded), backgroundColor: Colors.green),
                 );
                 Navigator.pop(context);
               }
               if (state is NoteUpdateSuccess) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Note updated successfully"), backgroundColor: Colors.green),
+                  const SnackBar(content: Text(AppConstants.noteUpdated), backgroundColor: Colors.green),
                 );
                 Navigator.pop(context);
               }
@@ -106,7 +105,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                                   );
                                 } else {
                                   context.read<NoteCubit>().updateNote(
-                                    widget.note!['id'],
+                                    widget.note![AppConstants.idKey],
                                     titleText,
                                     descriptionText,
                                   );
@@ -118,7 +117,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                               ),
                               child: Text(
-                                  widget.note == null ? AppConstants.save : 'Update',
+                                  widget.note == null ? AppConstants.save : AppConstants.update,
                                   style: const TextStyle(fontSize: 16)
                               ),
                             ),

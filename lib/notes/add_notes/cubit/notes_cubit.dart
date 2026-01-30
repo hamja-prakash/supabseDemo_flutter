@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../helper/appconstant.dart';
 import 'notes_state.dart';
 
 class NoteCubit extends Cubit<NoteState> {
@@ -25,8 +26,8 @@ class NoteCubit extends Cubit<NoteState> {
     emit(NoteLoading());
     try {
       await supabase.from('notes').insert({
-        'title': title,
-        'description': description,
+        AppConstants.titleKey: title,
+        AppConstants.descriptionKey: description,
       });
       emit(NoteAddSuccess());
       fetchNotes();
@@ -40,8 +41,8 @@ class NoteCubit extends Cubit<NoteState> {
     emit(NoteLoading());
     try {
       await supabase.from('notes')
-          .update({'title': title, 'description': description})
-          .eq('id', id);
+          .update({AppConstants.titleKey: title, AppConstants.descriptionKey: description})
+          .eq(AppConstants.idKey, id);
       emit(NoteUpdateSuccess());
       fetchNotes();
     } catch (e) {
@@ -53,7 +54,7 @@ class NoteCubit extends Cubit<NoteState> {
   Future<void> deleteNote(int id) async {
     emit(NoteLoading());
     try {
-      await supabase.from('notes').delete().eq('id', id);
+      await supabase.from('notes').delete().eq(AppConstants.idKey, id);
       emit(NoteDeleteSuccess());
       fetchNotes();
     } catch (e) {

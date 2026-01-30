@@ -23,4 +23,21 @@ class AppConstants {
   static const String titleRequired = "please enter title";
   static const String descriptionRequired = "please enter description";
   static const String save = 'Save';
+  static const String addNote = "Add Note";
+  static const String editNote = "Edit Note";
+  static const String myNotes = "My Notes";
+  static const String noNotesFound = "No notes found";
+  static const String somethingWentWrong = "Something went wrong";
+  static const String deleteNote = "Delete Note";
+  static const String deleteConfirmation = "Are you sure you want to delete this note?";
+  static const String cancel = "Cancel";
+  static const String delete = "Delete";
+  static const String noteAdded = "Note added successfully";
+  static const String noteUpdated = "Note updated successfully";
+  static const String noteDeleted = "Note deleted successfully";
+  static const String update = "Update";
+
+  static const String idKey = 'id';
+  static const String titleKey = 'title';
+  static const String descriptionKey = 'description';
 }
