@@ -6,9 +6,9 @@ class AppConstants {
   static const String google = 'Google';
   static const String apple = 'Apple';
   static const String dontHaveAccount = "Don't have an account? Register";
-  static const String emailRequired = "enter email address";
-  static const String emailValidation = "enter a valid email address";
-  static const String passwordRequired = "Password is required";
+  static const String emailRequired = "please enter email address";
+  static const String emailValidation = "please enter a valid email address";
+  static const String passwordRequired = "please enter the password";
   static const String passwordValidation = "Password must be at least 6 characters";
 
   static const String otpSuccessSent = "OTP Sent successfully!";
@@ -17,4 +17,10 @@ class AppConstants {
   static const String sendOTP = "Send OTP";
   static const String changePhoneNo = "Change Phone Number";
   static const String phoneNo = "Phone Number";
+
+  static const String title = 'Title';
+  static const String description = 'Description';
+  static const String titleRequired = "please enter title";
+  static const String descriptionRequired = "please enter description";
+  static const String save = 'Save';
 }

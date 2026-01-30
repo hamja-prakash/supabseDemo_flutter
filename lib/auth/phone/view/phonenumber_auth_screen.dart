@@ -6,16 +6,14 @@ import 'package:supabase_demo/auth/phone/bloc/phone_auth_state.dart';
 import 'package:supabase_demo/helper/appconstant.dart';
 
 import '../../../home_screen.dart';
+import '../../../shared/common_widget/common_textfield.dart';
 
 class PhonenumberAuthScreen extends StatelessWidget {
   const PhonenumberAuthScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => PhoneAuthCubit(),
-      child: const _PhoneNumberAuthView(),
-    );
+    return BlocProvider(create: (context) => PhoneAuthCubit(), child: const _PhoneNumberAuthView());
   }
 }
 
@@ -38,10 +36,22 @@ class _PhoneNumberAuthViewState extends State<_PhoneNumberAuthView> {
   }
 
   void _sendOtp() {
-    if (_formKey.currentState!.validate()) {
-      context.read<PhoneAuthCubit>().signInWithPhoneNo(_phoneController.text);
+    FocusScope.of(context).unfocus();
+
+    final phone = _phoneController.text.trim();
+
+    // Step 1: Check Empty
+    if (phone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppConstants.enterPhoneNo), backgroundColor: Colors.red),
+      );
+      return;
     }
+
+    // Step 2: Send OTP
+    context.read<PhoneAuthCubit>().signInWithPhoneNo(phone);
   }
+
 
   void _verifyOtp(String otp) {
     context.read<PhoneAuthCubit>().verifyOTP(_phoneController.text, otp);
@@ -51,51 +61,39 @@ class _PhoneNumberAuthViewState extends State<_PhoneNumberAuthView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
         // title: const Text("Phone Authentication"),
       ),
       body: BlocListener<PhoneAuthCubit, PhoneAuthState>(
-          listener: (context, state) {
-            if (state is PhoneAuthFailure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Error: ${state.message}")),
-              );
-            } else if (state is PhoneAuthVerifyFailure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Verification Error: ${state.message}")),
-              );
-            } else if (state is PhoneAuthCodeSent) {
-              setState(() {
-                _isOtpSent = true;
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text(AppConstants.otpSuccessSent)),
-              );
-            }
-            else if (state is PhoneAuthVerified) {
-              Navigator.of(context).pop();
-            }
-          },
-          child: BlocBuilder<PhoneAuthCubit, PhoneAuthState>(
-            builder: (context, state) {
-              final isLoading = state is PhoneAuthLoading || state is PhoneAuthVerifyLoading;
-              return Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Form(
-                    key: _formKey,
+        listener: (context, state) {
+          if (state is PhoneAuthFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: ${state.message}")));
+          } else if (state is PhoneAuthVerifyFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Verification Error: ${state.message}")));
+          } else if (state is PhoneAuthCodeSent) {
+            setState(() {
+              _isOtpSent = true;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text(AppConstants.otpSuccessSent)));
+          } else if (state is PhoneAuthVerified) {
+            Navigator.of(context).pop();
+          }
+        },
+        child: BlocBuilder<PhoneAuthCubit, PhoneAuthState>(
+          builder: (context, state) {
+            final isLoading = state is PhoneAuthLoading || state is PhoneAuthVerifyLoading;
+            return Center(
+              child: SingleChildScrollView(
+                child: Form(
+                  key: _formKey,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Icon(
-                          Icons.phonelink_lock_rounded,
-                          size: 80,
-                          color: Colors.deepPurple,
-                        ),
+                        const Icon(Icons.phonelink_lock_rounded, size: 80, color: Colors.deepPurple),
                         const SizedBox(height: 32),
 
                         if (!_isOtpSent) ...[
@@ -107,20 +105,11 @@ class _PhoneNumberAuthViewState extends State<_PhoneNumberAuthView> {
 
                           const SizedBox(height: 24),
 
-                          TextFormField(
+                          CustomTextField(
                             controller: _phoneController,
+                            hint: AppConstants.phoneNo,
                             keyboardType: TextInputType.phone,
-                            decoration: const InputDecoration(
-                              labelText: AppConstants.phoneNo,
-                              border: OutlineInputBorder(),
-                              prefixIcon: Icon(Icons.phone),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return AppConstants.enterPhoneNo;
-                              }
-                              return null;
-                            },
+                            prefixIcon: Icon(Icons.phone),
                           ),
 
                           const SizedBox(height: 24),
@@ -132,63 +121,58 @@ class _PhoneNumberAuthViewState extends State<_PhoneNumberAuthView> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.deepPurple,
                                 foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                               ),
                               child: isLoading
                                   ? const SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
+                                      height: 24,
+                                      width: 24,
+                                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                    )
                                   : const Text(AppConstants.sendOTP),
                             ),
                           ),
-                        ] else
-                          ...[
-                            Text(
-                              "Enter the code sent to ${_phoneController.text}",
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(fontSize: 16, color: Colors.grey),
+                        ] else ...[
+                          Text(
+                            "Enter the code sent to ${_phoneController.text}",
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontSize: 16, color: Colors.grey),
+                          ),
+                          const SizedBox(height: 24),
+                          OtpTextField(
+                            numberOfFields: 6,
+                            borderColor: Colors.deepPurple,
+                            showFieldAsBox: true,
+                            fieldWidth: 45,
+                            borderRadius: BorderRadius.circular(8),
+                            textStyle: const TextStyle(fontSize: 18, color: Colors.black),
+                            margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                            onSubmit: (String verificationCode) {
+                              _verifyOtp(verificationCode);
+                            }, // end onSubmit
+                          ),
+                          const SizedBox(height: 24),
+                          // Verify Button (Optional if onSubmit handles it, but good for UX)
+                          if (isLoading)
+                            const Center(child: CircularProgressIndicator())
+                          else
+                            TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  _isOtpSent = false;
+                                });
+                              },
+                              child: const Text(AppConstants.changePhoneNo),
                             ),
-                            const SizedBox(height: 24),
-                            OtpTextField(
-                              numberOfFields: 6,
-                              borderColor: Colors.deepPurple,
-                              showFieldAsBox: true,
-                              fieldWidth: 45,
-                              borderRadius: BorderRadius.circular(8),
-                              textStyle: const TextStyle(fontSize: 18, color: Colors.black),
-                              margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                              onSubmit: (String verificationCode) {
-                                _verifyOtp(verificationCode);
-                              }, // end onSubmit
-                            ),
-                            const SizedBox(height: 24),
-                            // Verify Button (Optional if onSubmit handles it, but good for UX)
-                            if (isLoading)
-                              const Center(child: CircularProgressIndicator())
-                            else
-                              TextButton(
-                                onPressed: () {
-                                  setState(() {
-                                    _isOtpSent = false;
-                                  });
-                                },
-                                child: const Text(AppConstants.changePhoneNo),
-                              ),
-                          ],
+                        ],
                       ],
                     ),
                   ),
                 ),
-              );
-            },
-          )
+              ),
+            );
+          },
+        ),
       ),
     );
   }

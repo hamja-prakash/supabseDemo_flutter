@@ -5,6 +5,7 @@ import 'package:supabase_demo/auth/login/bloc/login_state.dart';
 import 'package:supabase_demo/auth/register/view/register_screen.dart';
 import 'package:supabase_demo/helper/appconstant.dart';
 import '../../../helper/assets_path.dart';
+import '../../../shared/common_widget/common_textfield.dart';
 import '../../phone/view/phonenumber_auth_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -42,15 +43,11 @@ class _LoginScreenState extends State<LoginScreen> {
             listener: (context, state) {
               // Navigation handled by AuthGate
               if (state is MagicLinkSuccess) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Check your email for login link")),
-                );
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Check your email for login link")));
               }
 
               if (state is MagicLinkFailure) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message)),
-                );
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
               }
 
               if (state is LoginFailure) {
@@ -83,45 +80,26 @@ class _LoginScreenState extends State<LoginScreen> {
                               children: [
                                 Icon(Icons.lock_person_rounded, size: 100, color: Colors.deepPurple),
                                 SizedBox(height: 10),
-                                TextFormField(
+                                CustomTextField(
                                   controller: email,
-                                  decoration: InputDecoration(hintText: AppConstants.email),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return AppConstants.emailRequired;
-                                    }
-                                    if (!isValidEmail(value)) {
-                                      return AppConstants.emailValidation;
-                                    }
-                                    return null;
-                                  },
+                                  hint: AppConstants.email,
+                                  keyboardType: TextInputType.emailAddress,
                                 ),
-                                TextFormField(
+
+                                SizedBox(height: 2),
+
+                                CustomTextField(
                                   controller: password,
-                                  textAlignVertical: TextAlignVertical.center,
+                                  hint: AppConstants.password,
                                   obscureText: !_isPasswordVisible,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return AppConstants.passwordRequired;
-                                    }
-                                    if (value.length < 6) {
-                                      return AppConstants.passwordValidation;
-                                    }
-                                    return null;
-                                  },
-                                  decoration: InputDecoration(
-                                    hintText: AppConstants.password,
-                                    suffixIcon: IconButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          _isPasswordVisible = !_isPasswordVisible;
-                                        });
-                                      },
-                                      icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
-                                    ),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
+                                    onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
                                   ),
                                 ),
-                                SizedBox(height: 10),
+
+                                SizedBox(height: 2),
+
                                 SizedBox(
                                   width: double.infinity,
                                   height: 50,
@@ -130,23 +108,66 @@ class _LoginScreenState extends State<LoginScreen> {
                                         ? null
                                         : () {
                                             FocusScope.of(context).unfocus();
-                                            if (_formKey.currentState!.validate()) {
-                                              context.read<LoginCubit>().login(email.text, password.text);
+
+                                            final emailText = email.text.trim();
+                                            final passwordText = password.text.trim();
+
+                                            // Step 1: Validate Email
+                                            if (emailText.isEmpty) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(AppConstants.emailRequired),
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                              );
+                                              return;
                                             }
+
+                                            if (!isValidEmail(emailText)) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(AppConstants.emailValidation),
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                              );
+                                              return;
+                                            }
+
+                                            // Step 2: Validate Password ONLY if Email is valid
+                                            if (passwordText.isEmpty) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(AppConstants.passwordRequired),
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                              );
+                                              return;
+                                            }
+
+                                            if (passwordText.length < 6) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(AppConstants.passwordValidation),
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                              );
+                                              return;
+                                            }
+
+                                            // Step 3: Call Login API
+                                            context.read<LoginCubit>().login(emailText, passwordText);
                                           },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.deepPurple,
                                       foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                     ),
                                     child: const Text(AppConstants.login, style: TextStyle(fontSize: 16)),
                                   ),
                                 ),
-                            
+
                                 SizedBox(height: 5),
-                            
+
                                 Row(
                                   children: [
                                     // Google Button
@@ -173,9 +194,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                         ),
                                       ),
                                     ),
-                            
+
                                     const SizedBox(width: 12),
-                            
+
                                     // Apple Button
                                     Expanded(
                                       child: GestureDetector(
@@ -202,9 +223,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                   ],
                                 ),
-                            
+
                                 SizedBox(height: 2),
-                            
+
                                 Row(
                                   children: [
                                     // Magic Link Button
@@ -214,13 +235,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                           FocusScope.of(context).unfocus();
                                           if (email.text.isNotEmpty) {
                                             context.read<LoginCubit>().signInWithMagicLink(email.text);
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(content: Text("Magic link sent to your email")),
-                                            );
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(SnackBar(content: Text("Magic link sent to your email")));
                                           } else {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(content: Text("Enter email first")),
-                                            );
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(SnackBar(content: Text("Enter email first")));
                                           }
                                         },
                                         child: Container(
@@ -241,9 +262,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                         ),
                                       ),
                                     ),
-                            
+
                                     const SizedBox(width: 12),
-                            
+
                                     // Phone Number Button
                                     Expanded(
                                       child: GestureDetector(
@@ -265,7 +286,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                             children: [
                                               Icon(Icons.phone, color: Colors.white),
                                               const SizedBox(width: 8),
-                                              const Text("Phone OTP", style: TextStyle(color: Colors.white),),
+                                              const Text("Phone OTP", style: TextStyle(color: Colors.white)),
                                             ],
                                           ),
                                         ),
@@ -273,17 +294,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                   ],
                                 ),
-                            
+
                                 SizedBox(height: 2),
-                            
+
                                 TextButton(
                                   onPressed: () {
                                     Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
                                   },
-                                  child: Text(
-                                    AppConstants.dontHaveAccount,
-                                    style: TextStyle(color: Colors.deepPurple),
-                                  ),
+                                  child: Text(AppConstants.dontHaveAccount, style: TextStyle(color: Colors.deepPurple)),
                                 ),
                               ],
                             ),
@@ -291,7 +309,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    if (state is LoginLoading || state is GoogleLoginLoading || state is AppleLoginLoading || state is MagicLinkLoading)
+                    if (state is LoginLoading ||
+                        state is GoogleLoginLoading ||
+                        state is AppleLoginLoading ||
+                        state is MagicLinkLoading)
                       Container(
                         color: Colors.black54,
                         child: Center(child: CircularProgressIndicator()),
