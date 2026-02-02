@@ -18,6 +18,38 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final supabase = Supabase.instance.client;
+  final ScrollController _scrollController = ScrollController();
+  late final NoteCubit _noteCubit;
+
+  @override
+  void initState() {
+    super.initState();
+    _noteCubit = NoteCubit();
+    _noteCubit.fetchNotes();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _noteCubit.close();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_isBottom) {
+      if (_noteCubit.state is NotesLoaded && (_noteCubit.state as NotesLoaded).hasMore) {
+        _noteCubit.fetchNotes(isLoadMore: true);
+      }
+    }
+  }
+
+  bool get _isBottom {
+    if (!_scrollController.hasClients) return false;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+    return currentScroll >= (maxScroll * 0.9); // Fetch slightly before bottom
+  }
 
   Future<void> logout() async {
     await supabase.auth.signOut();
@@ -32,8 +64,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => NoteCubit()..fetchNotes(),
+    return BlocProvider.value(
+      value: _noteCubit,
       child: Scaffold(
         appBar: AppBar(
           title: const Text(AppConstants.myNotes),
@@ -71,101 +103,113 @@ class _HomeScreenState extends State<HomeScreen> {
               if (state.notes.isEmpty) {
                 return const Center(child: Text(AppConstants.noNotesFound, style: TextStyle(fontWeight: .normal, fontSize: 20),));
               }
-              return ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: state.notes.length,
-                itemBuilder: (context, index) {
-                  final note = state.notes[index];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.only(
-                          right: 4, left: 16, top: 4, bottom: 4),
-                      title: Text(note[AppConstants.titleKey] ?? ''),
-                      subtitle: Text(note[AppConstants.descriptionKey] ?? ''),
-                      leading: Image.asset(
-                        AssetPath.bookLogo,
-                        color: Colors.deepPurple,
-                        width: 24,
-                        height: 24,
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit, color: Colors.blue),
-                            onPressed: () {
-                              final cubit = context.read<NoteCubit>();
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => BlocProvider.value(
-                                    value: cubit,
-                                    child: AddNoteScreen(note: note),
+              return SafeArea(
+                bottom: true,
+                child: ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.all(16),
+                  itemCount: state.hasMore ? state.notes.length + 1 : state.notes.length,
+                  itemBuilder: (context, index) {
+                    if (index >= state.notes.length) {
+                      return const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    final note = state.notes[index];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.only(
+                            right: 4, left: 16, top: 4, bottom: 4),
+                        title: Text(note[AppConstants.titleKey] ?? ''),
+                        subtitle: Text(note[AppConstants.descriptionKey] ?? ''),
+                        leading: Image.asset(
+                          AssetPath.bookLogo,
+                          color: Colors.deepPurple,
+                          width: 24,
+                          height: 24,
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit, color: Colors.blue),
+                              onPressed: () {
+                                final cubit = context.read<NoteCubit>();
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => BlocProvider.value(
+                                      value: cubit,
+                                      child: AddNoteScreen(note: note),
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () {
-                              final cubit = context.read<NoteCubit>();
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: const Text(AppConstants.deleteNote),
-                                  content: const Text(AppConstants.deleteConfirmation),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text(AppConstants.cancel),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                        cubit.deleteNote(note[AppConstants.idKey]);
-                                      },
-                                      child: const Text(AppConstants.delete, style: TextStyle(color: Colors.red)),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ],
+                                );
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () {
+                                final cubit = context.read<NoteCubit>();
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text(AppConstants.deleteNote),
+                                    content: const Text(AppConstants.deleteConfirmation),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text(AppConstants.cancel),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                          cubit.deleteNote(note[AppConstants.idKey]);
+                                        },
+                                        child: const Text(AppConstants.delete, style: TextStyle(color: Colors.red)),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               );
+
             }
             return const Center(child: Text(AppConstants.somethingWentWrong));
           },
         ),
 
         floatingActionButton: Builder(
-          builder: (context) {
-            return FloatingActionButton(
-              onPressed: () {
-                final cubit = context.read<NoteCubit>();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => BlocProvider.value(
-                      value: cubit,
-                      child: const AddNoteScreen(),
+            builder: (context) {
+              return FloatingActionButton(
+                onPressed: () {
+                  final cubit = context.read<NoteCubit>();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BlocProvider.value(
+                        value: cubit,
+                        child: const AddNoteScreen(),
+                      ),
                     ),
-                  ),
-                );
-              },
-              shape: const CircleBorder(),
-              backgroundColor: Colors.deepPurple,
-              child: const Icon(Icons.add, color: Colors.white),
-            );
-          }
+                  );
+                },
+                shape: const CircleBorder(),
+                backgroundColor: Colors.deepPurple,
+                child: const Icon(Icons.add, color: Colors.white),
+              );
+            }
         ),
       ),
     );
   }
 }
+
