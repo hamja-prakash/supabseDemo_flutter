@@ -40,4 +40,8 @@ class AppConstants {
   static const String idKey = 'id';
   static const String titleKey = 'title';
   static const String descriptionKey = 'description';
+
+  static const String notesTable = 'notes';
+
+  static const String searchNotes = 'Search notes...';
 }

@@ -14,6 +14,15 @@ class NoteCubit extends Cubit<NoteState> {
   final int _limit = 10;
   final List<Map<String, dynamic>> _notes = [];
   bool _isFetching = false;
+  String _searchQuery = '';
+
+  // ===== SEARCH =====
+  Future<void> searchNotes(String query) async {
+    _searchQuery = query;
+    _page = 0;
+    _notes.clear();
+    await fetchNotes();
+  }
 
   // ===== FETCH =====
   Future<void> fetchNotes({bool isLoadMore = false}) async {
@@ -35,11 +44,20 @@ class NoteCubit extends Cubit<NoteState> {
       final from = _page * _limit;
       final to = from + _limit - 1;
 
-      final res = await supabase
-          .from('notes')
-          .select()
+      var query = supabase.from(AppConstants.notesTable).select();
+
+      if (_searchQuery.isNotEmpty) {
+        // query = query.ilike(
+        //   AppConstants.titleKey,
+        //   '%$_searchQuery%',
+        // );
+        query = query.or('${AppConstants.titleKey}.ilike.%$_searchQuery%,${AppConstants.descriptionKey}.ilike.%$_searchQuery%');
+      }
+
+      final res = await query
           .range(from, to)
-          .order('created_at', ascending: false); // Order by newest first
+          // .order('title', ascending: true)
+          .order('created_at', ascending: false);
 
       final newNotes = List<Map<String, dynamic>>.from(res);
       _notes.addAll(newNotes);
@@ -57,7 +75,7 @@ class NoteCubit extends Cubit<NoteState> {
   Future<void> addNote(String title, String description) async {
     emit(NoteLoading());
     try {
-      await supabase.from('notes').insert({
+      await supabase.from(AppConstants.notesTable).insert({
         AppConstants.titleKey: title,
         AppConstants.descriptionKey: description,
       });
@@ -72,7 +90,7 @@ class NoteCubit extends Cubit<NoteState> {
   Future<void> updateNote(int id, String title, String description) async {
     emit(NoteLoading());
     try {
-      await supabase.from('notes')
+      await supabase.from(AppConstants.notesTable)
           .update({AppConstants.titleKey: title, AppConstants.descriptionKey: description})
           .eq(AppConstants.idKey, id);
       emit(NoteUpdateSuccess());
