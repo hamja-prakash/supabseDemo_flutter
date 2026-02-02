@@ -29,6 +29,10 @@ class LoginCubit extends Cubit<LoginState> {
       } else {
         emit(const LoginFailure('Login failed: Unknown error'));
       }
+    } on AuthException catch (e) {
+      emit(LoginFailure(e.message));
+    } on SocketException {
+      emit(const LoginFailure('No internet connection'));
     } catch (e) {
       emit(LoginFailure(e.toString()));
     }
@@ -65,6 +69,10 @@ class LoginCubit extends Cubit<LoginState> {
       } else {
         emit(const GoogleLoginFailure("Google login failed"));
       }
+    } on AuthException catch (e) {
+      emit(GoogleLoginFailure(e.message));
+    } on SocketException {
+      emit(const GoogleLoginFailure('No internet connection'));
     } catch (e) {
       emit(GoogleLoginFailure(e.toString()));
     }
@@ -101,6 +109,10 @@ class LoginCubit extends Cubit<LoginState> {
       } else {
         emit(const AppleLoginFailure("Apple login failed"));
       }
+    } on AuthException catch (e) {
+      emit(AppleLoginFailure(e.message));
+    } on SocketException {
+      emit(const AppleLoginFailure('No internet connection'));
     } catch (e) {
       emit(AppleLoginFailure(e.toString()));
     }
@@ -115,6 +127,10 @@ class LoginCubit extends Cubit<LoginState> {
       );
       print("Magic link sent to $email with redirect: com.psspl.example.supabasedemo://login-callback");
       emit(MagicLinkSuccess());
+    } on AuthException catch (e) {
+      emit(MagicLinkFailure(e.message));
+    } on SocketException {
+      emit(const MagicLinkFailure('No internet connection'));
     } catch (e) {
       emit(MagicLinkFailure(e.toString()));
     }

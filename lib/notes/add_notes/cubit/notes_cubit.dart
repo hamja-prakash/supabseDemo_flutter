@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../helper/appconstant.dart';
@@ -57,7 +58,7 @@ class NoteCubit extends Cubit<NoteState> {
       final res = await query
           .range(from, to)
           // .order('title', ascending: true)
-          .order('created_at', ascending: false);
+          .order(AppConstants.createdAtKey, ascending: false);
 
       final newNotes = List<Map<String, dynamic>>.from(res);
       _notes.addAll(newNotes);
@@ -65,6 +66,12 @@ class NoteCubit extends Cubit<NoteState> {
 
       _isFetching = false;
       emit(NotesLoaded(List.from(_notes), hasMore: newNotes.length >= _limit));
+    } on PostgrestException catch (e) {
+      _isFetching = false;
+      emit(NoteError(e.message));
+    } on SocketException {
+      _isFetching = false;
+      emit(NoteError(AppConstants.noInternet));
     } catch (e) {
       _isFetching = false;
       emit(NoteError(e.toString()));
@@ -81,6 +88,10 @@ class NoteCubit extends Cubit<NoteState> {
       });
       emit(NoteAddSuccess());
       fetchNotes();
+    } on PostgrestException catch (e) {
+      emit(NoteError(e.message));
+    } on SocketException {
+      emit(NoteError(AppConstants.noInternet));
     } catch (e) {
       emit(NoteError(e.toString()));
     }
@@ -95,6 +106,10 @@ class NoteCubit extends Cubit<NoteState> {
           .eq(AppConstants.idKey, id);
       emit(NoteUpdateSuccess());
       fetchNotes();
+    } on PostgrestException catch (e) {
+      emit(NoteError(e.message));
+    } on SocketException {
+      emit(NoteError(AppConstants.noInternet));
     } catch (e) {
       emit(NoteError(e.toString()));
     }
@@ -107,6 +122,10 @@ class NoteCubit extends Cubit<NoteState> {
       await supabase.from('notes').delete().eq(AppConstants.idKey, id);
       emit(NoteDeleteSuccess());
       fetchNotes();
+    } on PostgrestException catch (e) {
+      emit(NoteError(e.message));
+    } on SocketException {
+      emit(NoteError(AppConstants.noInternet));
     } catch (e) {
       emit(NoteError(e.toString()));
     }
