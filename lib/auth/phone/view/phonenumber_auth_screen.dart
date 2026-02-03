@@ -4,8 +4,6 @@ import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 import 'package:supabase_demo/auth/phone/bloc/phone_auth_cubit.dart';
 import 'package:supabase_demo/auth/phone/bloc/phone_auth_state.dart';
 import 'package:supabase_demo/helper/appconstant.dart';
-
-import '../../../home_screen.dart';
 import '../../../shared/common_widget/common_textfield.dart';
 
 class PhonenumberAuthScreen extends StatelessWidget {
