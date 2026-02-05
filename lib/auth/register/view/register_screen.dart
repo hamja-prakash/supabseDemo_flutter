@@ -1,9 +1,15 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_demo/auth/register/bloc/register_cubit.dart';
 import 'package:supabase_demo/auth/register/bloc/register_state.dart';
 import 'package:supabase_demo/auth/login/view/login_screen.dart';
+
+import '../../../helper/appconstant.dart';
+import '../../../shared/common_widget/common_textfield.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -13,8 +19,12 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final name = TextEditingController();
   final email = TextEditingController();
+  final address = TextEditingController();
+  final phone = TextEditingController();
   final password = TextEditingController();
+  File? profileImage;
   bool _isPasswordVisible = false;
 
   @override
@@ -26,17 +36,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: BlocListener<RegisterCubit, RegisterState>(
             listener: (context, state) {
               if (state is RegisterSuccess) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Registration successful')),
-                );
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registration successful')));
                 Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
-                    (context) => false);
-              } else if (state is RegisterFailure) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message)),
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  (context) => false,
                 );
+              } else if (state is RegisterFailure) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
               }
             },
             child: BlocBuilder<RegisterCubit, RegisterState>(
@@ -52,39 +59,65 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             spacing: 10,
                             children: [
-                              const Icon(
-                                Icons.lock_person_rounded,
-                                size: 100,
-                                color: Colors.deepPurple,
+                              // const Icon(
+                              //   Icons.lock_person_rounded,
+                              //   size: 100,
+                              //   color: Colors.deepPurple,
+                              // ),
+                              // const SizedBox(height: 2),
+                              GestureDetector(
+                                onTap: () async {
+                                  final selectedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
+                                  if (selectedImage != null) {
+                                    setState(() {
+                                      profileImage = File(selectedImage.path);
+                                    });
+                                  }
+                                },
+                                child: CircleAvatar(
+                                  radius: 80,
+                                  backgroundImage: profileImage == null ? null : FileImage(profileImage!),
+                                ),
                               ),
-                              const SizedBox(height: 10),
-                              TextFormField(
+
+                              const SizedBox(height: 2),
+
+                              CustomTextField(controller: name, hint: AppConstants.name),
+
+                              const SizedBox(height: 2),
+
+                              CustomTextField(
                                 controller: email,
-                                decoration: const InputDecoration(
-                                  hintText: 'Email',
-                                ),
+                                hint: AppConstants.email,
+                                keyboardType: TextInputType.emailAddress,
                               ),
-                              TextFormField(
+
+                              const SizedBox(height: 2),
+
+                              CustomTextField(controller: address, hint: AppConstants.address),
+
+                              const SizedBox(height: 2),
+
+                              CustomTextField(
+                                controller: phone,
+                                hint: AppConstants.phoneNo,
+                                keyboardType: TextInputType.phone,
+                              ),
+
+                              const SizedBox(height: 2),
+
+                              CustomTextField(
                                 controller: password,
-                                textAlignVertical: TextAlignVertical.center,
+                                hint: AppConstants.password,
                                 obscureText: !_isPasswordVisible,
-                                decoration: InputDecoration(
-                                  hintText: 'Password',
-                                  suffixIcon: IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _isPasswordVisible = !_isPasswordVisible;
-                                      });
-                                    },
-                                    icon: Icon(
-                                      _isPasswordVisible
-                                          ? Icons.visibility
-                                          : Icons.visibility_off,
-                                    ),
-                                  ),
+                                suffixIcon: IconButton(
+                                  icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
+                                  onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
                                 ),
                               ),
-                              const SizedBox(height: 10),
+
+                              const SizedBox(height: 2),
+
                               SizedBox(
                                 width: double.infinity,
                                 height: 50,
@@ -92,19 +125,65 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   onPressed: state is RegisterLoading
                                       ? null
                                       : () {
+                                          if (profileImage == null) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(content: Text('Please select a profile image')),
+                                            );
+                                            return;
+                                          }
+
+                                          if (name.text.trim().isEmpty) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(const SnackBar(content: Text('Please enter your name')));
+                                            return;
+                                          }
+
+                                          if (email.text.trim().isEmpty) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(const SnackBar(content: Text('Please enter your email')));
+                                            return;
+                                          }
+
+                                          if (address.text.trim().isEmpty) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(const SnackBar(content: Text('Please enter your address')));
+                                            return;
+                                          }
+
+                                          if (phone.text.trim().isEmpty) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(content: Text('Please enter your phone number')),
+                                            );
+                                            return;
+                                          }
+
+                                          if (password.text.trim().isEmpty) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(const SnackBar(content: Text('Please enter your password')));
+                                            return;
+                                          }
+
                                           FocusScope.of(context).unfocus();
                                           context.read<RegisterCubit>().register(
-                                                email.text,
-                                                password.text,
-                                              );
+                                            name.text,
+                                            address.text,
+                                            phone.text,
+                                            profileImage!,
+                                            email.text,
+                                            password.text,
+                                          );
                                         },
                                   style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.deepPurple,
-                                      foregroundColor: Colors.white),
-                                  child: const Text(
-                                    'Register',
-                                    style: TextStyle(fontSize: 16),
+                                    backgroundColor: Colors.deepPurple,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                   ),
+
+                                  child: const Text('Register', style: TextStyle(fontSize: 16)),
                                 ),
                               ),
                               TextButton(
@@ -115,7 +194,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   "Already have an account? Login",
                                   style: TextStyle(color: Colors.deepPurple),
                                 ),
-                              )
+                              ),
                             ],
                           ),
                         ),
@@ -124,9 +203,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     if (state is RegisterLoading)
                       Container(
                         color: Colors.black54,
-                        child: const Center(
-                          child: CircularProgressIndicator(),
-                        ),
+                        child: const Center(child: CircularProgressIndicator()),
                       ),
                   ],
                 );

@@ -1,5 +1,8 @@
 class AppConstants {
+  static const String name = 'Name';
   static const String email = 'Email';
+  static const String address = 'Address';
+  static const String phone = 'Phone No.';
   static const String password = 'Password';
   static const String login = 'Login';
   static const String logout = 'Logout';
@@ -43,6 +46,15 @@ class AppConstants {
   static const String createdAtKey = 'created_at';
 
   static const String notesTable = 'notes';
+  static const String profilesTable = 'profiles';
+
+  static const String nameKey = 'name';
+  static const String addressKey = 'address';
+  static const String phoneNumberKey = 'phone_number';
+  static const String emailKey = 'email';
+  static const String profilePicKey = 'profile_pic';
+
+  static const String profileBucket = 'profile_bucket';
 
   static const String searchNotes = 'Search notes...';
   static const String noInternet = 'No internet connection';
