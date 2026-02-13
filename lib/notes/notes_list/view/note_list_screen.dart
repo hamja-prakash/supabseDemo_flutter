@@ -9,6 +9,7 @@ import 'package:supabase_demo/notes/add_notes/cubit/notes_state.dart';
 import 'package:supabase_demo/notes/add_notes/view/add_note_screen.dart';
 import 'package:supabase_demo/shared/common_widget/common_textfield.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase_demo/shared/common_widget/app_drawer.dart';
 
 class NoteListScreen extends StatefulWidget {
   const NoteListScreen({super.key});
@@ -75,6 +76,7 @@ class _NoteListScreenState extends State<NoteListScreen> {
     return BlocProvider.value(
       value: _noteCubit,
       child: Scaffold(
+        drawer: const AppDrawer(),
         appBar: AppBar(
           title: const Text(AppConstants.myNotes),
           centerTitle: true,

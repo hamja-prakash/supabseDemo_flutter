@@ -14,11 +14,14 @@ class RegisterCubit extends Cubit<RegisterState> {
 
   Future<void> register(
     String name,
-    String address,
     String phoneNumber,
     File profilePic,
     String email,
     String password,
+    String country,
+    String city,
+    String street,
+    String postalCode,
   ) async {
     emit(RegisterLoading());
     try {
@@ -34,12 +37,19 @@ class RegisterCubit extends Cubit<RegisterState> {
         final insertData = {
           AppConstants.idKey: user.id,
           AppConstants.nameKey: name,
-          AppConstants.addressKey: address,
           AppConstants.emailKey: email,
           AppConstants.phoneNumberKey: phoneNumber,
           AppConstants.profilePicKey: url,
         };
         await supabase.from(AppConstants.profilesTable).insert(insertData);
+
+        final insertAddress = {
+          AppConstants.countryKey: country,
+          AppConstants.cityKey: city,
+          AppConstants.streetKey: street,
+          AppConstants.postalCodeKey: postalCode,
+        };
+        await supabase.from(AppConstants.addressesTable).insert(insertAddress);
         emit(RegisterSuccess());
       } else {
         emit(const RegisterFailure('Registration failed: Unknown error'));

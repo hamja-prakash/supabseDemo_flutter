@@ -21,7 +21,10 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final name = TextEditingController();
   final email = TextEditingController();
-  final address = TextEditingController();
+  final country = TextEditingController();
+  final city = TextEditingController();
+  final street = TextEditingController();
+  final postalCode = TextEditingController();
   final phone = TextEditingController();
   final password = TextEditingController();
   File? profileImage;
@@ -94,7 +97,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                               const SizedBox(height: 2),
 
-                              CustomTextField(controller: address, hint: AppConstants.address),
+                              CustomTextField(controller: country, hint: AppConstants.country),
+
+                              const SizedBox(height: 2),
+
+                              CustomTextField(controller: city, hint: AppConstants.city),
+
+                              const SizedBox(height: 2),
+
+                              CustomTextField(controller: street, hint: AppConstants.street),
+
+                              const SizedBox(height: 2),
+
+                              CustomTextField(controller: postalCode, hint: AppConstants.postalCode),
 
                               const SizedBox(height: 2),
 
@@ -146,10 +161,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                             return;
                                           }
 
-                                          if (address.text.trim().isEmpty) {
+                                          if (country.text.trim().isEmpty) {
                                             ScaffoldMessenger.of(
                                               context,
-                                            ).showSnackBar(const SnackBar(content: Text('Please enter your address')));
+                                            ).showSnackBar(const SnackBar(content: Text('Please enter your country')));
+                                            return;
+                                          }
+
+                                          if (city.text.trim().isEmpty) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(const SnackBar(content: Text('Please enter your city')));
+                                            return;
+                                          }
+
+                                          if (street.text.trim().isEmpty) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(const SnackBar(content: Text('Please enter your street')));
+                                            return;
+                                          }
+
+                                          if (postalCode.text.trim().isEmpty) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(const SnackBar(content: Text('Please enter your postalCode')));
                                             return;
                                           }
 
@@ -170,11 +206,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           FocusScope.of(context).unfocus();
                                           context.read<RegisterCubit>().register(
                                             name.text,
-                                            address.text,
                                             phone.text,
                                             profileImage!,
                                             email.text,
                                             password.text,
+                                            country.text,
+                                            city.text,
+                                            street.text,
+                                            postalCode.text,
                                           );
                                         },
                                   style: ElevatedButton.styleFrom(

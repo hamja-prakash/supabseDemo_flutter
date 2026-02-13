@@ -1,7 +1,10 @@
 class AppConstants {
   static const String name = 'Name';
   static const String email = 'Email';
-  static const String address = 'Address';
+  static const String country = 'Country';
+  static const String city = 'City';
+  static const String street = 'Street';
+  static const String postalCode = 'PostalCode';
   static const String phone = 'Phone No.';
   static const String password = 'Password';
   static const String login = 'Login';
@@ -44,9 +47,16 @@ class AppConstants {
   static const String titleKey = 'title';
   static const String descriptionKey = 'description';
   static const String createdAtKey = 'created_at';
+  static const String updatedAtKey = 'updated_at';
+
+  static const String countryKey = 'country';
+  static const String cityKey = 'city';
+  static const String streetKey = 'street';
+  static const String postalCodeKey = 'postal_code';
 
   static const String notesTable = 'notes';
   static const String profilesTable = 'profiles';
+  static const String addressesTable = 'addresses';
 
   static const String nameKey = 'name';
   static const String addressKey = 'address';
